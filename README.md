@@ -1,5 +1,5 @@
 # Gomon
-this is simple application like nodemon for golang
+nodemon for golang
 
 ## Author
 akwan maroso
