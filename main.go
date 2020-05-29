@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -20,8 +21,6 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	fmt.Println(pwd)
-
 	if err := filepath.Walk(pwd, watchDir); err != nil {
 		fmt.Println("ERROR", err)
 	}
@@ -30,10 +29,19 @@ func main() {
 	go func() {
 		for {
 			select {
-			case event := <-watcher.Events:
-				fmt.Printf("ERROR! %#v\n", event)
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				log.Println("event: ", event)
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					log.Println("modified file: ", event.Name)
+				}
 
-			case err := <-watcher.Errors:
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
 				fmt.Println("ERROR", err)
 			}
 		}
