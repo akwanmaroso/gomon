@@ -1,5 +1,5 @@
 # Gomon
-nodemon for golang
+hot reload in golang app
 
 ## Author
 akwan maroso
