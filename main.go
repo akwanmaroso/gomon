@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
@@ -35,6 +36,7 @@ func main() {
 				}
 				log.Println("event: ", event)
 				if event.Op&fsnotify.Write == fsnotify.Write {
+					execute()
 					log.Println("modified file: ", event.Name)
 				}
 
@@ -55,4 +57,14 @@ func watchDir(path string, fi os.FileInfo, err error) error {
 		return watcher.Add(path)
 	}
 	return nil
+}
+
+func execute() {
+	out, err := exec.Command("go run main.go").Output()
+	if err != nil {
+		fmt.Printf("%s", err)
+	}
+	fmt.Println("Command success executed")
+	output := string(out[:])
+	fmt.Println(output)
 }
