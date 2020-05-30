@@ -16,7 +16,6 @@ func main() {
 	// create a new watcher
 	watcher, _ = fsnotify.NewWatcher()
 	defer watcher.Close()
-	fmt.Println("helo")
 	pwd, err := os.Getwd()
 	if err != nil {
 		fmt.Println(err)
@@ -26,7 +25,6 @@ func main() {
 		fmt.Println("ERROR", err)
 	}
 	done := make(chan bool)
-
 	go func() {
 		for {
 			select {
@@ -34,16 +32,27 @@ func main() {
 				if !ok {
 					return
 				}
+
 				log.Println("event: ", event)
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					execute()
-					log.Println("modified file: ", event.Name)
+					log.Println("modified file:", event.Name)
 				}
+
+				cmd := exec.Command("go", "run", "main.go")
+				if err := cmd.Start(); err != nil {
+					log.Fatal(err)
+				}
+				fmt.Printf("reset completed\n")
+
+				cmd = exec.Command("sleep", "4")
+				cmd.Run()
+				break
 
 			case err, ok := <-watcher.Errors:
 				if !ok {
 					return
 				}
+				fmt.Println("error =========")
 				fmt.Println("ERROR", err)
 			}
 		}
@@ -59,12 +68,17 @@ func watchDir(path string, fi os.FileInfo, err error) error {
 	return nil
 }
 
-func execute() {
-	out, err := exec.Command("go run main.go").Output()
-	if err != nil {
-		fmt.Printf("%s", err)
-	}
-	fmt.Println("Command success executed")
-	output := string(out[:])
-	fmt.Println(output)
-}
+// func execCmd(cmd string, args ...string) {
+// 	command := exec.Command(cmd, args...)
+// 	var out bytes.Buffer
+// 	var stderr bytes.Buffer
+// 	command.Stdout = &out
+// 	command.Stderr = &stderr
+// 	err := command.Run()
+// 	if err != nil {
+// 		errstring := fmt.Sprintf(fmt.Sprint(err) + ": " + stderr.String())
+// 		io.WriteString(nil, errstring)
+// 	}
+// 	io.WriteString(nil, out.String())
+// 	fmt.Println(out.String())
+// }
